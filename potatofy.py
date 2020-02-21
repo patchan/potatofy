@@ -1,9 +1,10 @@
 import requests
 import requests.auth
 import json
+import questrade_api
 
 CLIENT_ID = 'B0RJvfEsABEDcH3EBupD6Ci35V9cFw'
-REDIRECT_URI = 'http://localhost:5000/callback'
+REDIRECT_URI = 'https://patchan.ca/potatofy'
 
 from flask import Flask
 app = Flask(__name__)
@@ -35,8 +36,9 @@ if __name__ == '__main__':
     app.run(debug=True, port=5000)
 
 from flask import abort, request
-@app.route('/qt_callback')
-def qt_callback():
+@app.route('/potatofy')
+def potatofy():
+    print("hello")
     error = request.args.get('error', '')
     if error:
         return "Error: " + error
@@ -45,6 +47,7 @@ def qt_callback():
         abort(403)
     code = request.args.get('code')
     access_token = get_token(code)
+    print(get_account_info(access_token))
     return "got an access token! %s" % get_account_info(access_token)
 
 def get_token(code):
