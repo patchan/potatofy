@@ -3,19 +3,9 @@ import requests.auth
 import os
 import json
 
-CLIENT_ID = 'YHvFCEIWtdfoRPu1XbwBpZZ1cA6MlwHC0'
-REDIRECT_URI = 'https://patchan.ca/potatofy'
-
-intial_token = 'KPHdcpQPolnkHUesAd6hCHVdKND92V8H0'
+initial_token = 'n6fuHb3yE8LundlvCEpNdUGvqAFKW6cS0'
 login_server = 'https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token='
 api_server = 'https://api01.iq.questrade.com/'
-token = {
-  "access_token": "V1xPMqy3djnD8BmbCUXQdE1BbPDI8gHA0",
-  "api_server": "https://api03.iq.questrade.com/",
-  "expires_in": 1800,
-  "refresh_token": "B1L8Lu7YRgE8_tu8rJIxVO_JA_0QUymi0",
-  "token_type": "Bearer"
-}
 
 TOKEN_PATH = os.path.expanduser('./token/token.json')
 BALANCE_PATH = os.path.expanduser('./balances/balances.json')
@@ -104,8 +94,9 @@ def save_balance_info(balances):
 
 '''
 this is only necessary to get the intial access token manually
-get_intial_token(intial_token)
 '''
+get_intial_token(initial_token)
+# '''
 account_info = get_account_info()
 account_nums = get_account_num(account_info)
 save_balance_info(get_balance_info(account_nums))
