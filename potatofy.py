@@ -8,6 +8,7 @@ BALANCE_PATH = os.path.expanduser('./balances/balances.json')
 POSITIONS_PATH = os.path.expanduser('./positions/positions.json')
 
 auth = Authenticator()
+# auth.authorize()
 # auth.get_initial_token(initial_token)
 
 account_info = auth.get_account_info()
@@ -18,5 +19,5 @@ for account_num in account_nums:
 
 for account in accounts:
     test = Rebalancer(account)
-    test.calculate_purchases()
-    print('done')
+    purchases = test.calculate_purchases()
+    print(purchases)

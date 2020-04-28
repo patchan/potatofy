@@ -7,10 +7,25 @@ import json
 class Authenticator:
     LOGIN_SERVER = 'https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token='
     API_SERVER = 'https://api01.iq.questrade.com/'
+    LOGIN_URL = 'https://login.questrade.com/APISignin.aspx?ReturnUrl=/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&response_type=token&redirect_uri=https://patchan.ca/potatofy'
+    ACCEPT_LINK = 'https://login.questrade.com/OAuth2/authorize_handler?response_type=token&redirect_uri=https://patchan.ca/potatofy&device=Windows+NT+4.0+Firefox&client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&scope=&state='
 
     TOKEN_PATH = os.path.expanduser('./token/token.json')
     BALANCE_PATH = os.path.expanduser('./balances/balances.json')
     POSITIONS_PATH = os.path.expanduser('./positions/positions.json')
+
+    def authorize(self):
+        USERNAME = input("enter username: ")
+        PASSWORD = input("enter password: ")
+        data = {'ctl00$DefaultContent$txtUsername': USERNAME, 'ctl00$DefaultContent$txtPassword': PASSWORD,
+                'ctl00$DefaultContent$hidResponseRelyingParty': '/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&response_type=token&redirect_uri=https://patchan.ca/potatofy'}
+        header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36'}
+        # response = requests.post(self.LOGIN_URL, params=data)
+        session = requests.Session()
+        session.get(self.LOGIN_URL, headers=header)
+        response = session.post(self.LOGIN_URL, data=data, headers=header)
+        # response = session.get(self.ACCEPT_LINK)
+        print(response.body)
 
     def get_initial_token(self, refresh_token):
         response = requests.get(self.LOGIN_SERVER + refresh_token)
