@@ -2,3 +2,4 @@ venv/
 token/
 balances/
 positions/
+__pycache__/

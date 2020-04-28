@@ -1,12 +1,6 @@
 from Authenticator import Authenticator
 from Rebalancer import Account
 from Rebalancer import Rebalancer
-import os
-
-initial_token = 'ZjUBG48pUe808yQBWotMrUw8tC9szwaS0'
-BALANCE_PATH = os.path.expanduser('./balances/balances.json')
-POSITIONS_PATH = os.path.expanduser('./positions/positions.json')
-
 
 auth = Authenticator()
 # auth.get_initial_token(initial_token)
