@@ -7,8 +7,7 @@ from bs4 import BeautifulSoup
 
 class Authenticator:
     LOGIN_SERVER = 'https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token='
-    API_SERVER = 'https://api01.iq.questrade.com/'
-    LOGIN_URL = 'https://login.questrade.com/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&response_type=token&redirect_uri=https://patchan.ca/potatofy'
+    AUTH_SERVER = 'https://login.questrade.com/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&response_type=token&redirect_uri=https://patchan.ca/potatofy'
 
     TOKEN_PATH = os.path.expanduser('./token/token.json')
     BALANCE_PATH = os.path.expanduser('./balances/balances.json')
@@ -44,7 +43,7 @@ class Authenticator:
                 'ctl00$DefaultContent$hidResponseRelyingParty': '/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw'}
         session = requests.Session()
         session.headers.update(headers)
-        get_resp = session.get(self.LOGIN_URL)
+        get_resp = session.get(self.AUTH_SERVER)
         self.set_view_state(get_resp.text, data)
         response = session.post(get_resp.url, data=data)
         security_check = session.get(response.url)
@@ -190,8 +189,8 @@ class Authenticator:
                                     headers=new_header)
             return response.json()
 
-    def get_account_num(self, accounts_info):
-        accounts = accounts_info['accounts']
+    def get_account_nums(self):
+        accounts = self.get_account_info()['accounts']
         result = []
         for account in accounts:
             result.append(account["number"])
