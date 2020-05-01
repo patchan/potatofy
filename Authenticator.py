@@ -12,8 +12,8 @@ class Authenticator:
     TOKEN_PATH = os.path.expanduser('./token/token.json')
 
     def __init__(self):
-        self.TOKEN = None
-        self.load_token()
+        self.TOKEN = self.load_token()
+        # self.load_token()
 
     def get_access_token(self):
         return self.TOKEN.get_access_token()
@@ -27,10 +27,14 @@ class Authenticator:
     def get_token_type(self):
         return self.TOKEN.get_token_type()
 
-    def login(self):
-        username = input('enter username: ')
-        password = input('enter password: ')
-        self.authorize(username, password)
+    # def login(self):
+    #     username = input('enter username: ')
+    #     password = input('enter password: ')
+    #     self.authorize(username, password)
+
+    def authenticate(self, username, password):
+        if self.TOKEN is None:
+            self.authorize(username, password)
 
     def authorize(self, username, password):
         session = requests.Session()
@@ -140,8 +144,8 @@ class Authenticator:
             response = response.json()
             self.save_token(self.create_token(response))
         else:
-            print('Failed to retrieve new access token.')
-            self.login()
+            print('Failed to retrieve new access token. Login again')
+            # self.login()
 
     # saves Token type as json
     def save_token(self, token):
@@ -157,18 +161,20 @@ class Authenticator:
     # tries to read token from disk, prompts login re-authentication if fails
     def load_token(self):
         try:
-            self.read_token()
+            return self.read_token()
         except IOError:
             print('No token provided and none found at {}'.format(self.TOKEN_PATH))
-            self.login()
+            return None
+            # self.login()
         except ValueError:
             print('Invalid token, please log in again.')
-            self.login()
+            return None
+            # self.login()
 
     def read_token(self):
         with open(self.TOKEN_PATH) as file:
             json_token = json.load(file)
-            self.TOKEN = self.create_token(json_token)
+            return self.create_token(json_token)
 
     # creates a Token object from json
     def create_token(self, json_token):

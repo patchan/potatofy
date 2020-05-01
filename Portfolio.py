@@ -1,4 +1,3 @@
-from Authenticator import Authenticator
 from Broker import Broker
 
 
@@ -7,11 +6,13 @@ class Portfolio:
     def __init__(self):
         # initialize fields
         self.accounts = {}
-        self.auth = Authenticator()
         self.broker = Broker()
 
         # register accounts
         self.register_accounts()
+
+    def get_broker(self):
+        return self.broker
 
     def register_accounts(self):
         accounts = self.broker.get_accounts()
