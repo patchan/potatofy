@@ -10,8 +10,6 @@ class Authenticator:
     AUTH_SERVER = 'https://login.questrade.com/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&response_type=token&redirect_uri=https://patchan.ca/potatofy'
 
     TOKEN_PATH = os.path.expanduser('./token/token.json')
-    BALANCE_PATH = os.path.expanduser('./balances/balances.json')
-    POSITIONS_PATH = os.path.expanduser('./positions/positions.json')
 
     def __init__(self):
         self.TOKEN = None
@@ -113,14 +111,6 @@ class Authenticator:
         event_validation = self.extract_event_validation(html)
         self.set_asp_state(data, event_target, event_argument, view_state, view_state_generator, event_validation)
 
-    # def get_initial_token(self, refresh_token):
-    #     response = requests.get(self.LOGIN_SERVER + refresh_token)
-    #     if response.ok:
-    #         response = response.json()
-    #         self.save_token(response)
-    #     else:
-    #         print('Failed to retrieve initial access token')
-
     def get_new_token(self):
         response = requests.get(self.LOGIN_SERVER + self.get_refresh_token())
         if response.ok:
@@ -128,6 +118,7 @@ class Authenticator:
             self.save_token(response)
         else:
             print('Failed to retrieve new access token')
+            self.login()
 
     def save_token(self, token):
         self.write_token(token)
@@ -159,7 +150,11 @@ class Authenticator:
         token = Token(access, refresh, token_type, expiry, server)
         return token
 
-    def get_account_info(self):
+    def set_header(self):
+        header = {'Authorization': self.get_token_type() + ' ' + self.get_access_token()}
+        return header
+
+    def request_accounts(self):
         header = self.set_header()
         print(header)
         response = requests.get(self.get_api_server() + 'v1/accounts', headers=header)
@@ -173,11 +168,7 @@ class Authenticator:
             print(response)
             return response.json()
 
-    def set_header(self):
-        header = {'Authorization': self.get_token_type() + ' ' + self.get_access_token()}
-        return header
-
-    def get_balance_info(self, account):
+    def request_balances(self, account):
         header = self.set_header()
         response = requests.get(self.get_api_server() + 'v1/accounts/' + account + '/balances', headers=header)
         if response.ok:
@@ -189,18 +180,7 @@ class Authenticator:
                                     headers=new_header)
             return response.json()
 
-    def get_account_nums(self):
-        accounts = self.get_account_info()['accounts']
-        result = []
-        for account in accounts:
-            result.append(account["number"])
-        return result
-
-    def save_balance_info(self, balances):
-        with open(self.BALANCE_PATH, 'w') as file:
-            json.dump(balances, file)
-
-    def get_positions(self, account):
+    def request_positions(self, account):
         header = self.set_header()
         response = requests.get(self.get_api_server() + 'v1/accounts/' + account + '/positions', headers=header)
         if response.ok:
@@ -212,11 +192,7 @@ class Authenticator:
                                     headers=new_header)
             return response.json()['positions']
 
-    def save_positions(self, positions):
-        with open(self.POSITIONS_PATH, 'w') as file:
-            json.dump(positions, file)
-
-    def get_share_prices(self, positions):
+    def request_share_prices(self, positions):
         header = self.set_header()
         tickers = ""
         for k, v in positions.items():
