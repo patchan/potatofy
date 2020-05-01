@@ -32,7 +32,10 @@ class Portfolio:
         for account in self.accounts:
             account_pos = self.get_account(account).get_positions()
             for k, v in account_pos.items():
-                positions[k] = v
+                if k not in positions:
+                    positions[k] = v
+                else:
+                    positions[k] += v
         return positions
 
     def get_total_holdings(self):

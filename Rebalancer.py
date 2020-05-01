@@ -22,6 +22,7 @@ class Rebalancer:
     def set_target_alloc(self):
         for k in self.positions:
             self.target_alloc[k] = float(input("target allocation for " + k + ": "))
+        self.save_target_alloc()
 
     def save_target_alloc(self):
         with open(self.TARGET_PATH, 'w') as file:
@@ -42,7 +43,7 @@ class Rebalancer:
         return alloc
 
     # TODO: add functionality for selecting certain accounts to rebalance
-    def calculate_purchases(self, portfolio):
+    def calculate_purchases(self):
         target = self.total_holdings + self.buying_power
         target_pos = {}
         diff = {}
