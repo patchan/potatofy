@@ -2,4 +2,5 @@ venv/
 token/
 balances/
 positions/
+tokens/
 __pycache__/
