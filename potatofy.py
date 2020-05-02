@@ -1,10 +1,13 @@
 from Rebalancer import Rebalancer
 from Portfolio import Portfolio
+from Broker import Broker
 from GUI import *
 
-portfolio = Portfolio()
 # reb = Rebalancer(portfolio)
 # reb.set_target_alloc()
 # print(reb.calculate_purchases())
 
-gui = GUI()
+broker = Broker()
+portfolio = Portfolio(broker)
+rebalancer = Rebalancer(portfolio)
+gui = GUI(broker, portfolio, rebalancer)

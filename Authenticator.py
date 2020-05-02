@@ -14,6 +14,8 @@ class Authenticator:
 
     def __init__(self):
         self.TOKEN = None
+        self.session = None
+        self.last_response = None
         # try:
         #     self.load_token()
         # except:
@@ -31,11 +33,6 @@ class Authenticator:
     def get_token_type(self):
         return self.TOKEN.get_token_type()
 
-    # def login(self):
-    #     username = input('enter username: ')
-    #     password = input('enter password: ')
-    #     self.authorize(username, password)
-
     def authenticate(self):
         if self.TOKEN is None:
             try:
@@ -43,23 +40,30 @@ class Authenticator:
             except:
                 raise AuthException('unable to authenticate')
 
-    def authorize(self, username, password):
-        session = requests.Session()
-        init_resp = self.initialize_session(session)
-        login_resp = self.request_login(session, init_resp, username, password)
-        security_check = self.request_security_question(session, login_resp)
-        auth_response = self.request_security_check(session, security_check)
-        final_resp = self.authorize_api(session, auth_response)
-        token = self.parse_token(final_resp.url)
-        self.save_token(token)
+    def login(self, username, password):
+        self.initialize_session()
+        self.request_login(username, password)
+        self.request_security_question()
+        return self.parse_security_question()
 
-    def initialize_session(self, session):
+    def two_factor(self, answer):
+        self.request_security_check(answer)
+        self.authorize_api()
+        try:
+            token = self.parse_token(self.last_response.url)
+            self.save_token(token)
+        except:
+            raise AuthException('could not create token')
+
+    def initialize_session(self):
+        self.session = requests.Session()
+        self.last_response = None
         user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36'
         headers = {'User-Agent': user_agent}
-        session.headers.update(headers)
-        return session.get(self.AUTH_SERVER)
+        self.session.headers.update(headers)
+        self.last_response = self.session.get(self.AUTH_SERVER)
 
-    def request_login(self, session, response, username, password):
+    def request_login(self, username, password):
         data = {}
         data['ctl00$DefaultContent$txtUsername'] = username
         data['ctl00$DefaultContent$txtPassword'] = password
@@ -67,30 +71,33 @@ class Authenticator:
         data['ctl00$DefaultContent$txtUsernameHidden'] = ''
         data['ctl00$DefaultContent$hdnIsCaptchaVisible'] = ''
         data['ctl00$DefaultContent$hidResponseRelyingParty'] = '/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw'
-        self.set_view_state(response.text, data)
-        return session.post(response.url, data=data)
+        self.set_view_state(self.last_response.text, data)
+        self.last_response = self.session.post(self.last_response.url, data=data)
 
-    def request_security_question(self, session, response):
-        return session.get(response.url)
+    def request_security_question(self):
+        self.last_response = self.session.get(self.last_response.url)
 
-    def request_security_check(self, session, response):
-        check_html = self.parse_html(response.text)
+    def request_security_check(self, answer):
+        check_html = self.parse_html(self.last_response.text)
         question_id = self.extract_question_id(check_html)
-        print(self.extract_question(check_html))
-        answer = input('enter answer: ')
         data = {}
         data['ctl00$DefaultContent$hdnQuestionID'] = question_id
         data['ctl00$DefaultContent$txtAnswer'] = answer
         data['ctl00_DefaultContent_RadWindowManager1_ClientState'] = ''
-        self.set_view_state(response.text, data)
+        self.set_view_state(self.last_response.text, data)
         # view state has a unique EVENTTARGET not in HTML
         data['__EVENTTARGET'] = 'ctl00$DefaultContent$btnContinue'
-        return session.post(response.url, data=data)
+        self.last_response = self.session.post(self.last_response.url, data=data)
 
-    def authorize_api(self, session, response):
+    def parse_security_question(self):
+        check_html = self.parse_html(self.last_response.text)
+        return self.extract_question(check_html)
+
+    def authorize_api(self):
         data = {'ctl00$DefaultContent$btnAllow': 'Allow'}
-        self.set_view_state(response.text, data)
-        return session.post(response.url, data=data)
+        self.set_view_state(self.last_response.text, data)
+        url = self.last_response.url
+        self.last_response = self.session.post(url, data=data)
 
     def set_asp_state(self, data, event_target, event_argument, view_state, view_state_generator, event_validation):
         data['__EVENTTARGET'] = event_target

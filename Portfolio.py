@@ -1,12 +1,9 @@
-from Broker import Broker
-
-
 class Portfolio:
 
-    def __init__(self):
+    def __init__(self, broker):
         # initialize fields
         self.accounts = {}
-        self.broker = Broker()
+        self.broker = broker
 
     def get_broker(self):
         return self.broker

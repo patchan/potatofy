@@ -1,16 +1,18 @@
 from tkinter import *
 
 from AuthException import AuthException
-from Portfolio import Portfolio
-from Rebalancer import Rebalancer
 
 
 class GUI:
 
-    def __init__(self):
-        self.portfolio = Portfolio()
-        self.rebalancer = Rebalancer(self.portfolio)
+    def __init__(self, broker, portfolio, rebalancer):
+        self.broker = broker
+        self.portfolio = portfolio
+        self.rebalancer = rebalancer
         self.window = Tk()
+        self.init_main_window()
+
+    def init_main_window(self):
         self.window.title("potatofy")
         Label(self.window, text="Portfolio Holdings").grid(row=0, column=0, columnspan=4, ipadx=20, sticky=W)
         Button(self.window, text="Load Portfolio", command=self.update_portfolio).grid(row=0, column=6)
@@ -45,8 +47,8 @@ class GUI:
 
     def auth_error(self):
         auth_err = Toplevel(self.window)
-        auth_err.title("potatofy")
-        Label(auth_err, text="Unable to authenticate your account.\nPlease log in.").grid(row=0, pady=3)
+        auth_err.title("Error")
+        Label(auth_err, text="Failed to authenticate your account.\nPlease log in.").grid(row=0, pady=3)
         Button(auth_err, text="Ok", command=lambda: self.prompt_login(auth_err)).grid(row=1, pady=3)
 
     def prompt_login(self, auth_err):
@@ -92,5 +94,22 @@ class GUI:
         Button(login_window, text="Log In", command=lambda: self.login(username.get(), password.get(), login_window)).grid(row=3, columnspan=2, pady=3)
 
     def login(self, username, password, window):
+        self.security_check(self.broker.authenticate(username, password), window)
+
+    def security_check(self, question, window):
+        window = Toplevel(window)
+        window.title("potatofy")
+        Label(window, text="Security Question").pack()
+
+        Label(window, text=question).pack()
+        answer = StringVar()
+        Entry(window, textvariable=answer, show="*").pack()
+
+        Button(window, text="Submit", command=lambda: self.two_factor(answer.get(), window)).pack()
+
+    def two_factor(self, answer, window):
         window.destroy()
-        self.portfolio.get_broker().authenticate(username, password)
+        try:
+            self.broker.authenticate_two_factor(answer)
+        except AuthException:
+            self.auth_error()
