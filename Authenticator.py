@@ -2,6 +2,7 @@ import requests
 import requests.auth
 import os
 import json
+from AuthException import AuthException
 from bs4 import BeautifulSoup
 
 
@@ -12,8 +13,11 @@ class Authenticator:
     TOKEN_PATH = os.path.expanduser('./token/token.json')
 
     def __init__(self):
-        self.TOKEN = self.load_token()
-        # self.load_token()
+        self.TOKEN = None
+        # try:
+        #     self.load_token()
+        # except:
+        #     raise AuthException('unable to authenticate')
 
     def get_access_token(self):
         return self.TOKEN.get_access_token()
@@ -32,9 +36,12 @@ class Authenticator:
     #     password = input('enter password: ')
     #     self.authorize(username, password)
 
-    def authenticate(self, username, password):
+    def authenticate(self):
         if self.TOKEN is None:
-            self.authorize(username, password)
+            try:
+                self.load_token()
+            except:
+                raise AuthException('unable to authenticate')
 
     def authorize(self, username, password):
         session = requests.Session()
@@ -160,21 +167,24 @@ class Authenticator:
 
     # tries to read token from disk, prompts login re-authentication if fails
     def load_token(self):
-        try:
-            return self.read_token()
-        except IOError:
-            print('No token provided and none found at {}'.format(self.TOKEN_PATH))
-            return None
-            # self.login()
-        except ValueError:
-            print('Invalid token, please log in again.')
-            return None
-            # self.login()
-
-    def read_token(self):
         with open(self.TOKEN_PATH) as file:
             json_token = json.load(file)
-            return self.create_token(json_token)
+            self.TOKEN = self.create_token(json_token)
+        # try:
+        # return self.read_token()
+        # except IOError:
+        #     print('No token provided and none found at {}'.format(self.TOKEN_PATH))
+            # return None
+            # self.login()
+        # except ValueError:
+        #     print('Invalid token found.')
+            # return None
+            # self.login()
+
+    # def read_token(self):
+    #     with open(self.TOKEN_PATH) as file:
+    #         json_token = json.load(file)
+    #         return self.create_token(json_token)
 
     # creates a Token object from json
     def create_token(self, json_token):
@@ -193,6 +203,7 @@ class Authenticator:
 
     # request list of accounts
     def request_accounts(self):
+        self.authenticate()
         header = self.set_get_header()
         response = requests.get(self.get_api_server() + 'v1/accounts', headers=header)
         if response.ok:
@@ -205,6 +216,7 @@ class Authenticator:
 
     # request balances of account
     def request_balances(self, account):
+        self.authenticate()
         header = self.set_get_header()
         response = requests.get(self.get_api_server() + 'v1/accounts/' + account + '/balances', headers=header)
         if response.ok:
@@ -218,6 +230,7 @@ class Authenticator:
 
     # request positions in account
     def request_positions(self, account):
+        self.authenticate()
         header = self.set_get_header()
         response = requests.get(self.get_api_server() + 'v1/accounts/' + account + '/positions', headers=header)
         if response.ok:
@@ -231,6 +244,7 @@ class Authenticator:
 
     # request share information for all positions
     def request_share_prices(self, positions):
+        self.authenticate()
         header = self.set_get_header()
         tickers = ""
         for k, v in positions.items():

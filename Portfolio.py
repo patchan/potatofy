@@ -8,13 +8,10 @@ class Portfolio:
         self.accounts = {}
         self.broker = Broker()
 
-        # register accounts
-        self.register_accounts()
-
     def get_broker(self):
         return self.broker
 
-    def register_accounts(self):
+    def load_accounts(self):
         accounts = self.broker.get_accounts()
         for account in accounts['accounts']:
             account_id = account['number']

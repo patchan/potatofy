@@ -9,9 +9,16 @@ class Rebalancer:
     def __init__(self, portfolio):
         self.portfolio = portfolio
         self.positions = portfolio.get_all_positions()
+        self.allocator = 100
         self.total_holdings = portfolio.get_total_holdings()
         self.buying_power = portfolio.get_cash()
         self.target_alloc = self.load_targets()
+
+    def get_allocator(self):
+        return self.allocator
+
+    def reset_allocator(self):
+        self.allocator = 100
 
     def get_buying_power(self):
         return self.buying_power
@@ -19,10 +26,16 @@ class Rebalancer:
     def add_cash(self, cash):
         self.buying_power += cash
 
-    def set_target_alloc(self):
-        for k in self.positions:
-            self.target_alloc[k] = float(input("target allocation for " + k + ": "))
+    def set_target_alloc(self, ticker, allocation):
+        self.target_alloc[ticker] = allocation
+        # for k in self.positions:
+        #     self.target_alloc[k] = float(input("target allocation for " + k + ": "))
         self.save_target_alloc()
+
+    def reset_target_alloc(self):
+        self.target_alloc = {}
+        self.allocator = 100
+        # TODO: delete alloc file
 
     def save_target_alloc(self):
         with open(self.TARGET_PATH, 'w') as file:
