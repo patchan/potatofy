@@ -2,7 +2,8 @@ import requests
 import requests.auth
 import os
 import json
-from AuthException import AuthException
+from Error.AuthError import AuthError
+from Error.LoginError import LoginError
 from bs4 import BeautifulSoup
 
 
@@ -38,22 +39,25 @@ class Authenticator:
             try:
                 self.load_token()
             except:
-                raise AuthException('unable to authenticate')
+                raise AuthError('unable to authenticate')
 
     def login(self, username, password):
         self.initialize_session()
-        self.request_login(username, password)
-        self.request_security_question()
-        return self.parse_security_question()
+        try:
+            self.request_login(username, password)
+            self.request_security_question()
+            return self.parse_security_question()
+        except:
+            raise LoginError('unable to log in')
 
     def two_factor(self, answer):
-        self.request_security_check(answer)
-        self.authorize_api()
         try:
+            self.request_security_check(answer)
+            self.authorize_api()
             token = self.parse_token(self.last_response.url)
             self.save_token(token)
         except:
-            raise AuthException('could not create token')
+            raise AuthError('could not create token')
 
     def initialize_session(self):
         self.session = requests.Session()
@@ -73,6 +77,8 @@ class Authenticator:
         data['ctl00$DefaultContent$hidResponseRelyingParty'] = '/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw'
         self.set_view_state(self.last_response.text, data)
         self.last_response = self.session.post(self.last_response.url, data=data)
+        if self.last_response.url != 'https://login.questrade.com/CheckSecurityQuestion.aspx?cookieCheck=true':
+            raise LoginError('invalid username or password')
 
     def request_security_question(self):
         self.last_response = self.session.get(self.last_response.url)
