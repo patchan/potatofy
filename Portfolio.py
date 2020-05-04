@@ -4,11 +4,13 @@ class Portfolio:
         # initialize fields
         self.accounts = {}
         self.broker = broker
+        self.new_cash = 0
 
     def get_broker(self):
         return self.broker
 
     def load_accounts(self):
+        self.reset_cash()
         accounts = self.broker.get_accounts()
         for account in accounts['accounts']:
             account_id = account['number']
@@ -40,10 +42,16 @@ class Portfolio:
         return holdings
 
     def get_cash(self):
-        total_cash = 0
+        total_cash = self.new_cash
         for account in self.accounts:
             total_cash += self.get_account(account).get_cash()
         return total_cash
+
+    def add_cash(self, cash):
+        self.new_cash += cash
+
+    def reset_cash(self):
+        self.new_cash = 0
 
 
 class Account:
