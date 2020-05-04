@@ -1,4 +1,3 @@
-from Broker import Broker
 import os
 import json
 
@@ -8,28 +7,32 @@ class Rebalancer:
 
     def __init__(self, portfolio):
         self.portfolio = portfolio
-        self.positions = portfolio.get_all_positions()
-        self.allocator = 100
-        self.total_holdings = portfolio.get_total_holdings()
-        self.buying_power = portfolio.get_cash()
         self.target_alloc = self.load_targets()
 
-    def get_allocator(self):
-        return self.allocator
-
-    def reset_allocator(self):
-        self.allocator = 100
+    # def get_allocator(self):
+    #     return self.allocator
+    #
+    # def reset_allocator(self):
+    #     self.allocator = 100
 
     def get_buying_power(self):
-        return self.buying_power
+        return self.portfolio.get_cash()
 
+    def get_total_holdings(self):
+        return self.portfolio.get_total_holdings()
+
+    def get_positions(self):
+        return self.portfolio.get_all_positions()
+
+    def get_share_prices(self, positions):
+        return self.portfolio.get_broker().get_share_prices(positions)
+
+    # TODO: refactor Portfolio class method here
     def add_cash(self, cash):
         self.buying_power += cash
 
     def set_target_alloc(self, ticker, allocation):
         self.target_alloc[ticker] = allocation
-        # for k in self.positions:
-        #     self.target_alloc[k] = float(input("target allocation for " + k + ": "))
         self.save_target_alloc()
 
     def reset_target_alloc(self):
@@ -51,24 +54,34 @@ class Rebalancer:
 
     def calculate_alloc(self):
         alloc = {}
-        for k, v in self.positions.items():
-            alloc[k] = v / self.total_holdings
+        positions = self.get_positions()
+        for k, v in positions.items():
+            alloc[k] = v / self.get_total_holdings()
         return alloc
 
-    # TODO: add functionality for selecting certain accounts to rebalance
+    def is_valid_allocation(self):
+        total = 0.0
+        for ticker in self.target_alloc:
+            total += self.target_alloc[ticker]
+        return total == 100.0
+
     def calculate_purchases(self):
-        target = self.total_holdings + self.buying_power
-        target_pos = {}
-        diff = {}
-        shares = {}
-        share_prices = {}
-        share_data = Broker().get_share_prices(self.positions)
-        for ticker in share_data:
-            share_prices[ticker['symbol']] = ticker['prevDayClosePrice']
-        for k, v in self.target_alloc.items():
-            target_pos[k] = v * target
-        for k, v in target_pos.items():
-            diff[k] = v - self.positions[k]
-        for k, v in diff.items():
-            shares[k] = diff[k] // share_prices[k]
-        return shares
+        if self.is_valid_allocation():
+            target = self.get_total_holdings() + self.get_buying_power()
+            target_pos = {}
+            diff = {}
+            shares = {}
+            share_prices = {}
+            positions = self.get_positions()
+            share_data = self.get_share_prices(positions)
+            for ticker in share_data:
+                share_prices[ticker['symbol']] = ticker['prevDayClosePrice']
+            for k, v in self.target_alloc.items():
+                target_pos[k] = v / 100 * target
+            for k, v in target_pos.items():
+                diff[k] = v - positions[k]
+            for k, v in diff.items():
+                shares[k] = diff[k] // share_prices[k]
+            return shares
+        else:
+            return False

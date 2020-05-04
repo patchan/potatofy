@@ -47,6 +47,7 @@ class Holdings:
         self.parent.minsize(0, 0)
         self.frame = tk.Frame(self.parent, padx=30, pady=25)
         self.frame.grid()
+        self.rebalancing = tk.Frame(self.frame)
         self.cash = tk.Label(self.frame)
         self.init_control_bar()
         self.refresh_portfolio()
@@ -54,6 +55,7 @@ class Holdings:
         self.add_positions()
         self.add_totals()
         self.add_cash()
+        self.add_rebalance()
 
     def refresh_portfolio(self):
         try:
@@ -109,17 +111,83 @@ class Holdings:
         tk.Label(self.frame, text="Cash").grid(row=size+1, column=0, pady=pady)
         self.cash.config(text=self.potatofy.portfolio.get_cash())
         self.cash.grid(row=size+1, column=1, sticky=tk.E, pady=pady)
-        tk.Button(self.frame, text="Add cash", command=self.add_new_cash).grid(row=size+1, column=2, pady=pady)
+        tk.Button(self.frame, text="Add cash", command=self.add_new_cash).grid(row=size+1, column=2, pady=pady, sticky=tk.E)
 
     def add_new_cash(self):
         self.new_window = Cash(self, self.potatofy)
 
     def add_rebalance(self):
         size = self.frame.grid_size()[1]
-        tk.Button(self.frame, text="Rebalance", command=self.rebalance).grid(row=size+1, column=7)
+        tk.Button(self.frame, text="Rebalance", command=self.rebalance).grid(row=size+1, column=2, pady=5, sticky=tk.E)
 
     def rebalance(self):
-        rebalancing = self.potatofy.rebalance()
+        self.new_window = Rebalance(self, self.potatofy)
+
+    def add_rebalancing(self, shares):
+        self.rebalancing.destroy()
+        self.rebalancing = tk.Frame(self.frame)
+        self.rebalancing.grid(columnspan=3)
+        tk.Label(self.rebalancing, text='Ticker').grid(row=0, column=0)
+        tk.Label(self.rebalancing, text='Shares to Purchase').grid(row=0, column=1)
+        tk.Label(self.rebalancing, text='Price per share').grid(row=0, column=2)
+        tk.Label(self.rebalancing, text='Target Amount ($)').grid(row=0, column=3)
+        tk.Label(self.rebalancing, text='Target Allocation (%)').grid(row=0, column=4)
+        row = 1
+        for ticker, amount in shares.items():
+            tk.Label(self.rebalancing, text=ticker).grid(row=row, column=0)
+            tk.Label(self.rebalancing, text=amount).grid(row=row, column=1)
+            row += 1
+
+
+class Rebalance:
+
+    def __init__(self, parent, potatofy):
+        self.parent = parent
+        self.frame = tk.Toplevel(self.parent.frame, pady=20, padx=20)
+        self.potatofy = potatofy
+        self.inputs = {}
+        self.init_rebalance()
+
+    def init_rebalance(self):
+        self.frame.grid()
+        self.add_headings()
+        self.add_positions()
+        self.add_confirmation()
+
+    def add_headings(self):
+        tk.Label(self.frame, text="Holding").grid(row=0, column=0)
+        tk.Label(self.frame, text="Target Allocation (%)").grid(row=0, column=1, sticky=tk.E)
+
+    def add_positions(self):
+        row = self.frame.grid_size()[1]
+        for ticker in self.potatofy.portfolio.get_all_positions():
+            row += 1
+            tk.Label(self.frame, text=ticker).grid(row=row, column=0)
+            allocation = tk.DoubleVar()
+            self.inputs[ticker] = allocation
+            tk.Entry(self.frame, textvariable=allocation, justify=tk.RIGHT).grid(row=row, column=1)
+
+    def get_total_alloc(self):
+        total = 0
+        for ticker, alloc in self.inputs.items():
+            total += alloc.get()
+        return total
+
+    def add_confirmation(self):
+        size = self.frame.grid_size()[1]
+        tk.Button(self.frame, text="Confirm", command=self.rebalance).grid(row=size+1, columnspan=2, pady=5)
+
+    def rebalance(self):
+        for ticker, alloc in self.inputs.items():
+            self.potatofy.rebalancer.set_target_alloc(ticker, round(alloc.get(), 1))
+        result = self.potatofy.rebalance()
+        if result is not False:
+            self.parent.add_rebalancing(result)
+            self.frame.destroy()
+        else:
+            size = self.frame.grid_size()[1]
+            total = self.get_total_alloc()
+            tk.Label(self.frame, text="The total assigned target allocation is " + str(total) + "%.\nPlease try again.", fg='red').grid(row=size+1, columnspan=2)
 
 
 class Cash:
@@ -130,11 +198,10 @@ class Cash:
         self.frame = tk.Toplevel(self.parent.frame)
         self.init_add_cash()
 
-
     def init_add_cash(self):
         tk.Label(self.frame, text='How much cash do you want to add?').grid(row=0, pady=3)
         cash = tk.IntVar()
-        tk.Entry(self.frame, textvariable=cash).grid(row=1, pady=3)
+        tk.Entry(self.frame, textvariable=cash, justify=tk.RIGHT).grid(row=1, pady=3)
         tk.Button(self.frame, text="Add", command=lambda: self.add_cash(cash)).grid(row=3, pady=3)
 
     def add_cash(self, cash_var):
