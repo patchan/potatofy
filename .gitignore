@@ -1,0 +1,7 @@
+venv/
+token/
+balances/
+positions/
+targets/
+icons/
+__pycache__/
