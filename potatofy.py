@@ -182,12 +182,21 @@ class Rebalance:
 
     def add_confirm_button(self):
         size = self.frame.grid_size()[1]
-        tk.Button(self.frame, text="Confirm", command=self.rebalance).grid(row=size+1, columnspan=2, pady=5)
+        top_pad = (10, 0)
+        bot_pad = (0, 10)
+        tk.Label(self.frame, text='Rebalance Mode:').grid(row=size+1, column=0, sticky=tk.E, pady=top_pad)
+        buy_only = tk.BooleanVar()
+        tk.Radiobutton(self.frame, text='Buy & Sell', variable=buy_only, value=False).grid(row=size+1, column=1, sticky=tk.W, pady=top_pad)
+        tk.Radiobutton(self.frame, text='Buy Only', variable=buy_only, value=True).grid(row=size+2, column=1, sticky=tk.W, pady=bot_pad)
+        tk.Button(self.frame, text="Confirm", command=lambda: self.rebalance(buy_only.get())).grid(row=size+3, columnspan=2, pady=5)
 
-    def rebalance(self):
+    def rebalance(self, buy_only):
         for ticker, alloc in self.inputs.items():
             self.potatofy.rebalancer.set_target_alloc(ticker, round(alloc.get(), 1))
-        result = self.potatofy.rebalance()
+        if buy_only:
+            result = self.potatofy.rebalance_buy_only()
+        else:
+            result = self.potatofy.rebalance()
         if result is not False:
             self.parent.add_rebalancing_pane(result)
             self.frame.destroy()
@@ -383,6 +392,9 @@ class Potatofy:
 
     def rebalance(self):
         return self.rebalancer.calculate_purchases()
+
+    def rebalance_buy_only(self):
+        return self.rebalancer.calculate_buy_only_purchases()
 
     def add_cash(self, cash):
         self.rebalancer.add_cash(cash)
