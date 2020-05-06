@@ -8,15 +8,10 @@ class Rebalancer:
     def __init__(self, portfolio):
         self.portfolio = portfolio
         self.target_alloc = self.load_targets()
-
-    # def get_allocator(self):
-    #     return self.allocator
-    #
-    # def reset_allocator(self):
-    #     self.allocator = 100
+        self.buying_power = 0
 
     def get_buying_power(self):
-        return self.portfolio.get_cash()
+        return self.portfolio.get_cash() + self.buying_power
 
     def get_total_holdings(self):
         return self.portfolio.get_total_holdings()
@@ -31,14 +26,15 @@ class Rebalancer:
     def add_cash(self, cash):
         self.buying_power += cash
 
+    def reset_cash(self):
+        self.buying_power = 0
+
     def set_target_alloc(self, ticker, allocation):
         self.target_alloc[ticker] = allocation
         self.save_target_alloc()
 
     def reset_target_alloc(self):
         self.target_alloc = {}
-        self.allocator = 100
-        # TODO: delete alloc file
 
     def save_target_alloc(self):
         with open(self.TARGET_PATH, 'w') as file:
@@ -67,21 +63,28 @@ class Rebalancer:
 
     def calculate_purchases(self):
         if self.is_valid_allocation():
-            target = self.get_total_holdings() + self.get_buying_power()
-            target_pos = {}
-            diff = {}
-            shares = {}
-            share_prices = {}
+            result = {}
+            target_total = self.get_total_holdings() + self.get_buying_power()
             positions = self.get_positions()
             share_data = self.get_share_prices(positions)
             for ticker in share_data:
-                share_prices[ticker['symbol']] = ticker['prevDayClosePrice']
-            for k, v in self.target_alloc.items():
-                target_pos[k] = v / 100 * target
-            for k, v in target_pos.items():
-                diff[k] = v - positions[k]
-            for k, v in diff.items():
-                shares[k] = diff[k] // share_prices[k]
-            return shares
+                symbol = ticker['symbol']
+                stock = {'price': ticker['prevDayClosePrice']}
+                target_alloc = self.target_alloc[symbol]
+                stock['target_alloc'] = target_alloc
+                stock['target_pos'] = round(target_alloc / 100 * target_total, 2)
+                diff = stock['target_pos'] - positions[symbol]
+                stock['amount'] = diff // stock['price']
+                result[symbol] = stock
+            return result
         else:
             return False
+
+    def calculate_buy_only_purchases(self):
+        if self.is_valid_allocation():
+            result = {}
+            # TODO: implement
+            return result
+        else:
+            return False
+

@@ -16,10 +16,10 @@ class Main:
         self.parent = potatofy.parent
         self.potatofy = potatofy
         self.frame = tk.Frame(self.parent)
-        self.init_start_window()
         self.positions = {}
+        self.init()
 
-    def init_start_window(self):
+    def init(self):
         self.frame.pack(expand=True, pady=50, padx=50)
         self.parent.minsize(350, 350)
         tk.Label(self.frame, text="potatofy").pack(pady=20)
@@ -51,15 +51,15 @@ class Holdings:
         self.cash = tk.Label(self.frame)
         self.init_control_bar()
         self.refresh_portfolio()
-        self.add_headings()
-        self.add_positions()
-        self.add_totals()
-        self.add_cash()
-        self.add_rebalance()
+        self.setup_headings()
+        self.setup_positions()
+        self.setup_totals()
+        self.setup_cash()
+        self.setup_rebalance()
 
     def refresh_portfolio(self):
         try:
-            self.potatofy.portfolio.load_accounts()
+            self.potatofy.load_accounts()
         except Authenticate:
             self.auth_error_prompt()
 
@@ -77,24 +77,18 @@ class Holdings:
     def open_login_window(self):
         self.new_window = Login(self, self.potatofy)
 
-    def add_headings(self):
+    def setup_headings(self):
         tk.Label(self.frame, text="Holding").grid(row=1, column=0)
         tk.Label(self.frame, text="Amount ($)").grid(row=1, column=1, sticky=tk.E)
         tk.Label(self.frame, text="Allocation (%)").grid(row=1, column=2, sticky=tk.E)
-        # tk.Label(self.frame, text="Target Allocation (%)").grid(row=1, column=3)
-        # tk.Label(self.frame, text="Target Amount ($)").grid(row=1, column=4)
-        # tk.Label(self.frame, text="Difference").grid(row=1, column=5)
-        # tk.Label(self.frame, text="Price Per Share").grid(row=1, column=6)
-        # tk.Label(self.frame, text="Shares to Buy/Sell").grid(row=1, column=7)
-        # tk.Label(self.frame, text="Add").grid(row=1, column=8)
 
-    def add_positions(self):
+    def setup_positions(self):
         row = self.frame.grid_size()[1]
         for ticker, amount in self.potatofy.portfolio.get_all_positions().items():
             row += 1
             self.positions[ticker] = Position(self, ticker, amount, self.potatofy, row)
 
-    def add_totals(self):
+    def setup_totals(self):
         size = self.frame.grid_size()[1]
         tk.Label(self.frame, text="Total Holdings").grid(row=size+1, column=0)
         tk.Label(self.frame, text=round(self.get_holdings(), 2)).grid(row=size+1, column=1, sticky=tk.E)
@@ -105,7 +99,7 @@ class Holdings:
     def get_cash(self):
         return self.potatofy.portfolio.get_cash()
 
-    def add_cash(self):
+    def setup_cash(self):
         size = self.frame.grid_size()[1]
         pady = 3
         tk.Label(self.frame, text="Cash").grid(row=size+1, column=0, pady=pady)
@@ -116,54 +110,67 @@ class Holdings:
     def add_new_cash(self):
         self.new_window = Cash(self, self.potatofy)
 
-    def add_rebalance(self):
+    def setup_rebalance(self):
         size = self.frame.grid_size()[1]
         tk.Button(self.frame, text="Rebalance", command=self.rebalance).grid(row=size+1, column=2, pady=5, sticky=tk.E)
 
     def rebalance(self):
         self.new_window = Rebalance(self, self.potatofy)
 
-    def add_rebalancing(self, shares):
+    def add_rebalancing_pane(self, result):
         self.rebalancing.destroy()
         self.rebalancing = tk.Frame(self.frame)
         self.rebalancing.grid(columnspan=3)
-        tk.Label(self.rebalancing, text='Ticker').grid(row=0, column=0)
-        tk.Label(self.rebalancing, text='Shares to Purchase').grid(row=0, column=1)
-        tk.Label(self.rebalancing, text='Price per share').grid(row=0, column=2)
-        tk.Label(self.rebalancing, text='Target Amount ($)').grid(row=0, column=3)
-        tk.Label(self.rebalancing, text='Target Allocation (%)').grid(row=0, column=4)
+        padx = 5
+        tk.Label(self.rebalancing, text='Ticker').grid(row=0, column=0, padx=padx)
+        tk.Label(self.rebalancing, text='Shares to Purchase').grid(row=0, column=1, padx=padx)
+        tk.Label(self.rebalancing, text='Price per share').grid(row=0, column=2, padx=padx)
+        tk.Label(self.rebalancing, text='Target Amount ($)').grid(row=0, column=3, padx=padx)
+        tk.Label(self.rebalancing, text='Allocation (%)').grid(row=0, column=4, padx=padx)
         row = 1
-        for ticker, amount in shares.items():
-            tk.Label(self.rebalancing, text=ticker).grid(row=row, column=0)
-            tk.Label(self.rebalancing, text=amount).grid(row=row, column=1)
+        for ticker, data in result.items():
+            tk.Label(self.rebalancing, text=ticker).grid(row=row, column=0, padx=padx)
+            tk.Label(self.rebalancing, text=data['amount']).grid(row=row, column=1, padx=padx)
+            tk.Label(self.rebalancing, text=data['price']).grid(row=row, column=2, padx=padx)
+            tk.Label(self.rebalancing, text=data['target_pos']).grid(row=row, column=3, sticky=tk.E, padx=padx)
+            tk.Label(self.rebalancing, text=data['target_alloc']).grid(row=row, column=4, sticky=tk.E, padx=padx)
             row += 1
+        tk.Label(self.rebalancing, text='Total:\t' + str(self.get_total_target(result))).grid(row=row, column=3, sticky=tk.E, padx=padx)
+
+    def get_total_target(self, result):
+        total = 0
+        for ticker, data in result.items():
+            total += result[ticker]['target_pos']
+        return total
 
 
 class Rebalance:
 
     def __init__(self, parent, potatofy):
         self.parent = parent
-        self.frame = tk.Toplevel(self.parent.frame, pady=20, padx=20)
+        self.frame = tk.Toplevel(self.parent.frame)
         self.potatofy = potatofy
         self.inputs = {}
-        self.init_rebalance()
+        self.init()
 
-    def init_rebalance(self):
+    def init(self):
+        self.frame.config(pady=20, padx=20)
         self.frame.grid()
-        self.add_headings()
-        self.add_positions()
-        self.add_confirmation()
+        self.setup_headings()
+        self.setup_positions()
+        self.add_confirm_button()
 
-    def add_headings(self):
+    def setup_headings(self):
         tk.Label(self.frame, text="Holding").grid(row=0, column=0)
         tk.Label(self.frame, text="Target Allocation (%)").grid(row=0, column=1, sticky=tk.E)
 
-    def add_positions(self):
+    def setup_positions(self):
         row = self.frame.grid_size()[1]
         for ticker in self.potatofy.portfolio.get_all_positions():
             row += 1
             tk.Label(self.frame, text=ticker).grid(row=row, column=0)
             allocation = tk.DoubleVar()
+            # TODO: add loaded allocations
             self.inputs[ticker] = allocation
             tk.Entry(self.frame, textvariable=allocation, justify=tk.RIGHT).grid(row=row, column=1)
 
@@ -173,7 +180,7 @@ class Rebalance:
             total += alloc.get()
         return total
 
-    def add_confirmation(self):
+    def add_confirm_button(self):
         size = self.frame.grid_size()[1]
         tk.Button(self.frame, text="Confirm", command=self.rebalance).grid(row=size+1, columnspan=2, pady=5)
 
@@ -182,7 +189,7 @@ class Rebalance:
             self.potatofy.rebalancer.set_target_alloc(ticker, round(alloc.get(), 1))
         result = self.potatofy.rebalance()
         if result is not False:
-            self.parent.add_rebalancing(result)
+            self.parent.add_rebalancing_pane(result)
             self.frame.destroy()
         else:
             size = self.frame.grid_size()[1]
@@ -196,9 +203,9 @@ class Cash:
         self.parent = parent
         self.potatofy = potatofy
         self.frame = tk.Toplevel(self.parent.frame)
-        self.init_add_cash()
+        self.init()
 
-    def init_add_cash(self):
+    def init(self):
         tk.Label(self.frame, text='How much cash do you want to add?').grid(row=0, pady=3)
         cash = tk.IntVar()
         tk.Entry(self.frame, textvariable=cash, justify=tk.RIGHT).grid(row=1, pady=3)
@@ -207,33 +214,32 @@ class Cash:
     def add_cash(self, cash_var):
         try:
             cash = cash_var.get()
-            self.potatofy.portfolio.add_cash(cash)
-            self.update_parent_cash_label()
+            self.potatofy.add_cash(cash)
+            self.update_parent_cash()
             self.frame.destroy()
         except TclError:
             tk.Label(self.frame, text='Please enter a valid number.', fg='red').grid(row=4, pady=3)
 
-    def update_parent_cash_label(self):
-        self.parent.cash.config(text=round(self.potatofy.portfolio.get_cash(), 2))
+    def update_parent_cash(self):
+        self.parent.cash.config(text=round(self.potatofy.get_cash(), 2))
 
 
 class Position:
 
     def __init__(self, parent, ticker, amount, potatofy, index):
         self.parent = parent
+        self.potatofy = potatofy
         self.ticker = ticker
         self.amount = amount
-        self.potatofy = potatofy
         self.index = index
         self.frame = self.parent.frame
         self.frame.grid()
-        self.add_data()
+        self.setup_data()
 
-    def add_data(self):
+    def setup_data(self):
         self.add_holding_ticker(self.ticker)
         self.add_holding_amount(self.amount)
         self.add_allocation(self.amount)
-        # self.add_target_alloc()
 
     def add_holding_ticker(self, holding):
         tk.Label(self.frame, text=holding).grid(row=self.index, column=0)
@@ -245,22 +251,19 @@ class Position:
         allocation = amount / self.potatofy.portfolio.get_total_holdings() * 100
         tk.Label(self.frame, text=round(allocation, 1)).grid(row=self.index, column=2, sticky=tk.E)
 
-    # def add_target_alloc(self):
-    #     target = tk.StringVar()
-    #     tk.Entry(self.frame, textvariable=target).grid(row=0, column=3)
-
 
 class Login:
 
     def __init__(self, parent, potatofy):
         self.parent = parent
         self.potatofy = potatofy
-        self.frame = tk.Toplevel(self.parent.frame, width=250, height=250, padx=20, pady=20)
-        self.frame.resizable(False, False)
-        self.add_labels()
-        tk.Label(self.frame)
+        self.frame = tk.Toplevel(self.parent.frame)
+        self.init()
 
-    def add_labels(self):
+    def init(self):
+        self.frame.config(width=250, height=250, padx=20, pady=20)
+        self.frame.resizable(False, False)
+
         icon = ImageTk.PhotoImage(Image.open('./icons/Questrade.png').resize((209, 75)))
         img_label = tk.Label(self.frame, image=icon)
         img_label.image = icon
@@ -300,10 +303,10 @@ class Security:
         self.potatofy = potatofy
         self.question = question
         self.frame = tk.Toplevel(self.parent.frame)
-        self.add_labels()
+        self.init()
         tk.Label(self.frame)
 
-    def add_labels(self):
+    def init(self):
         tk.Label(self.frame, text="Security Question").pack()
 
         tk.Label(self.frame, text=self.question).pack()
@@ -328,6 +331,9 @@ class Authenticate:
         self.parent = parent
         self.potatofy = potatofy
         self.frame = tk.Toplevel(self.parent.frame)
+        self.init()
+
+    def init(self):
         self.frame.title('Error')
         tk.Label(self.frame, text="Failed to authenticate your account.\nPlease log in.").grid(row=0, pady=3)
         tk.Button(self.frame, text="Ok", command=lambda: self.prompt_login()).grid(row=1, pady=3)
@@ -342,7 +348,9 @@ class Success:
     def __init__(self, parent):
         self.parent = parent
         self.frame = tk.Toplevel(self.parent.frame)
-        self.frame.title('potatofy')
+        self.init()
+
+    def init(self):
         tk.Label(self.frame, text='Success!').pack()
         tk.Button(self.frame, text="Ok", command=self.confirm).pack()
 
@@ -364,6 +372,9 @@ class Potatofy:
     def init_root(self):
         self.parent.title("potatofy")
 
+    def load_accounts(self):
+        self.portfolio.load_accounts()
+
     def get_broker(self):
         return self.broker
 
@@ -372,6 +383,12 @@ class Potatofy:
 
     def rebalance(self):
         return self.rebalancer.calculate_purchases()
+
+    def add_cash(self, cash):
+        self.rebalancer.add_cash(cash)
+
+    def get_cash(self):
+        return self.rebalancer.get_buying_power()
 
 
 if __name__ == "__main__":
