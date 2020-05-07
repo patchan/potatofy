@@ -1,5 +1,5 @@
 # potatofy
 
-A Questrade integrated investment tool for easy portfolio rebalancing calculations in the passive investing spirit of the Canadian Couch Potato. Easily calculate how many shares of each holding to purchase/sell to achieve a target asset allocation.
+Potatofy is a Questrade integrated investment desktop GUI for easy portfolio rebalancing in the passive investing spirit of the Canadian Couch Potato. With a few simple clicks, you can easily calculate how many shares to purchase or sell to achieve a target asset allocation. We have support for both 'buy/sell' rebalancing and 'buy only' rebalancing.
 
-Potatofy requires authentication through your Questrade account to retrieve your account balances, which is handled entirely in client. Potatofy currently only supports login through two-factor authentication (which you should be using anyway!).
+Potatofy requires authorized API access to your Questrade account, which grants the application the ability to retrieve balances, positions, orders, and executions and make requests for market data. Potatofy currently only supports login through two-factor authentication (which you should be using anyway!).

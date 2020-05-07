@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+
 class Portfolio:
 
     def __init__(self, broker):
@@ -55,21 +58,21 @@ class Account:
         return self.balance
 
     def get_total_holdings(self):
-        total_holdings = 0
-        for currency in self.balance['perCurrencyBalances']:
+        total_holdings = Decimal(0)
+        for currency in self.balance['combinedBalances']:
             if currency['currency'] == 'CAD':
-                total_holdings += currency['marketValue']
+                total_holdings += Decimal(currency['marketValue']).quantize(Decimal('0.00'))
         return total_holdings
 
     def get_positions(self):
         positions_dict = {}
         for position in self.positions:
-            positions_dict[position['symbol']] = position['currentMarketValue']
+            positions_dict[position['symbol']] = Decimal(position['currentMarketValue']).quantize(Decimal('0.00'))
         return positions_dict
 
     def get_cash(self):
         for currency in self.balance['perCurrencyBalances']:
             if currency['currency'] == 'CAD':
-                return currency['cash']
+                return Decimal(currency['cash']).quantize(Decimal('0.00'))
             else:
                 return 0

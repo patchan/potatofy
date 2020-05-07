@@ -59,8 +59,10 @@ class Authenticator:
             raise AuthError('could not create token')
 
     def initialize_session(self):
+        self.session = None
         self.session = requests.Session()
         self.last_response = None
+        self.TOKEN = None
         user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36'
         headers = {'User-Agent': user_agent}
         self.session.headers.update(headers)
@@ -103,6 +105,7 @@ class Authenticator:
         self.set_view_state(self.last_response.text, data)
         url = self.last_response.url
         self.last_response = self.session.post(url, data=data)
+        # TODO: check response URL
 
     def set_asp_state(self, data, event_target, event_argument, view_state, view_state_generator, event_validation):
         data['__EVENTTARGET'] = event_target
@@ -158,13 +161,12 @@ class Authenticator:
     # uses loaded refresh token to generate a new access token
     # else prompts login for re-authentication
     def get_new_token(self):
-        response = requests.get(self.LOGIN_SERVER + self.get_refresh_token())
+        response = requests.post(self.LOGIN_SERVER + self.get_refresh_token())
         if response.ok:
             response = response.json()
             self.save_token(self.create_token(response))
         else:
-            print('Failed to retrieve new access token. Login again')
-            # self.login()
+            raise AuthError('Failed to retrieve new access token. Login again')
 
     # saves Token type as json
     def save_token(self, token):
