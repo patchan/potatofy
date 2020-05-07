@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import requests
 import requests.auth
 import os
@@ -11,16 +13,13 @@ class Authenticator:
     LOGIN_SERVER = 'https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token='
     AUTH_SERVER = 'https://login.questrade.com/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw&response_type=token&redirect_uri=https://patchan.ca/potatofy'
 
+    TOKEN_PARENT_DIR = os.path.expanduser('./token')
     TOKEN_PATH = os.path.expanduser('./token/token.json')
 
     def __init__(self):
         self.TOKEN = None
         self.session = None
         self.last_response = None
-        # try:
-        #     self.load_token()
-        # except:
-        #     raise AuthException('unable to authenticate')
 
     def get_access_token(self):
         return self.TOKEN.get_access_token()
@@ -175,6 +174,7 @@ class Authenticator:
     # writes Token to TOKEN_PATH as a json
     def write_token(self, token):
         token_json = token.convert_to_json()
+        Path(self.TOKEN_PARENT_DIR).mkdir(parents=True, exist_ok=True)
         with open(self.TOKEN_PATH, 'w') as file:
             json.dump(token_json, file)
 
@@ -183,21 +183,6 @@ class Authenticator:
         with open(self.TOKEN_PATH) as file:
             json_token = json.load(file)
             self.TOKEN = self.create_token(json_token)
-        # try:
-        # return self.read_token()
-        # except IOError:
-        #     print('No token provided and none found at {}'.format(self.TOKEN_PATH))
-            # return None
-            # self.login()
-        # except ValueError:
-        #     print('Invalid token found.')
-            # return None
-            # self.login()
-
-    # def read_token(self):
-    #     with open(self.TOKEN_PATH) as file:
-    #         json_token = json.load(file)
-    #         return self.create_token(json_token)
 
     # creates a Token object from json
     def create_token(self, json_token):

@@ -1,9 +1,10 @@
 import os
 import json
+from pathlib import Path
 
 
 class Rebalancer:
-    TARGET_PATH = os.path.expanduser('./targets/targets.json')
+    TARGET_PATH = os.path.expanduser('./targets')
 
     def __init__(self, portfolio):
         self.portfolio = portfolio
@@ -47,17 +48,18 @@ class Rebalancer:
 
     def save_target_alloc(self):
         try:
-            with open(self.TARGET_PATH, 'w') as file:
+            Path(self.TARGET_PATH).mkdir(parents=True, exist_ok=True)
+            with open(self.TARGET_PATH + '/targets.json', 'w') as file:
                 json.dump(self.target_alloc, file)
         except:
             print('Could not save targets')
 
     def load_targets(self):
         try:
-            with open(self.TARGET_PATH) as file:
+            with open(self.TARGET_PATH + '/targets.json') as file:
                 return json.load(file)
         except IOError:
-            print('No target allocations found at {}'.format(self.TARGET_PATH))
+            print('No target allocations found at {}'.format(self.TARGET_PATH + '/targets.json'))
             return {}
 
     def calculate_alloc(self):
