@@ -10,11 +10,14 @@ class Broker:
     def __init__(self):
         self.auth = Authenticator()
 
+    def set_authenticator(self, auth):
+        self.auth = auth
+
     def authenticate(self, username, password):
         return self.auth.login(username, password)
 
     def authenticate_two_factor(self, answer):
-        self.auth.two_factor(answer)
+        return self.auth.two_factor(answer)
 
     def get_accounts(self):
         return self.auth.request_accounts()

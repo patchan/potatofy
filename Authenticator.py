@@ -55,6 +55,7 @@ class Authenticator:
             self.authorize_api()
             token = self.parse_token(self.last_response.url)
             self.save_token(token)
+            return True
         except:
             raise AuthError('could not create token')
 
@@ -207,12 +208,12 @@ class Authenticator:
         header = self.set_get_header()
         response = requests.get(self.get_api_server() + 'v1/accounts', headers=header)
         if response.ok:
-            return response.json()
+            return response.json()['accounts']
         else:
             self.get_new_token()
             new_header = self.set_get_header()
             response = requests.get(self.get_api_server() + 'v1/accounts', headers=new_header)
-            return response.json()
+            return response.json()['accounts']
 
     # request balances of account
     def request_balances(self, account):
@@ -228,7 +229,7 @@ class Authenticator:
                                     headers=new_header)
             return response.json()
 
-    # request positions in account
+    # request list of positions in account
     def request_positions(self, account):
         self.authenticate()
         header = self.set_get_header()
@@ -247,7 +248,7 @@ class Authenticator:
         self.authenticate()
         header = self.set_get_header()
         tickers = ""
-        for k, v in positions.items():
+        for k in positions:
             tickers += k + ","
         response = requests.get(self.get_api_server() + 'v1/symbols?names=' + tickers, headers=header)
         if response.ok:

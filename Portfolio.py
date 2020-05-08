@@ -13,7 +13,7 @@ class Portfolio:
 
     def load_accounts(self):
         accounts = self.broker.get_accounts()
-        for account in accounts['accounts']:
+        for account in accounts:
             account_id = account['number']
             balance = self.broker.get_balance(account_id)
             positions = self.broker.get_positions(account_id)
@@ -23,7 +23,7 @@ class Portfolio:
         return self.accounts[account_id]
 
     def list_accounts(self):
-        return self.accounts.keys()
+        return list(self.accounts.keys())
 
     def get_all_positions(self):
         positions = {}

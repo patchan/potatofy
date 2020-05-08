@@ -3,4 +3,5 @@ token/
 balances/
 positions/
 targets/
+tests/data/
 __pycache__/
