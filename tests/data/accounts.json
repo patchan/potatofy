@@ -1,0 +1,20 @@
+{
+  "accounts": [
+    {
+      "type": "Margin",
+      "number": "111111",
+      "status": "Active",
+      "isPrimary": true,
+      "isBilling": true,
+      "clientAccountType": "Individual"
+    },
+    {
+      "type": "TFSA",
+      "number": "222222",
+      "status": "Active",
+      "isPrimary": true,
+      "isBilling": true,
+      "clientAccountType": "Individual"
+    }
+  ]
+}

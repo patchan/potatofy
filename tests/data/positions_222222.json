@@ -1,0 +1,22 @@
+{
+  "positions": [
+    {
+      "symbol": "AMZN",
+      "currentMarketValue": 71423.27,
+      "currentPrice": 184.68,
+      "averageEntryPrice": 60.23
+    },
+    {
+      "symbol": "VGRO.TO",
+      "currentMarketValue": 23165.27,
+      "currentPrice": 24.69,
+      "averageEntryPrice": 24.76417
+    },
+    {
+      "symbol": "FB",
+      "currentMarketValue": 3655.69,
+      "currentPrice": 212.35,
+      "averageEntryPrice": 60.23
+    }
+  ]
+}

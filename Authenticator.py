@@ -4,8 +4,8 @@ import requests
 import requests.auth
 import os
 import json
-from Error.AuthError import AuthError
-from Error.LoginError import LoginError
+from error.AuthError import AuthError
+from error.LoginError import LoginError
 from bs4 import BeautifulSoup
 
 

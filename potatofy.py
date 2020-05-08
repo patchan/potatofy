@@ -6,8 +6,8 @@ from Rebalancer import Rebalancer
 from Portfolio import Portfolio
 from Broker import Broker
 
-from Error.AuthError import AuthError
-from Error.LoginError import LoginError
+from error.AuthError import AuthError
+from error.LoginError import LoginError
 
 
 class Main:

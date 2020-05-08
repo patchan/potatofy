@@ -2,8 +2,8 @@ import json
 import os
 
 from Authenticator import Authenticator
-from Error.AuthError import AuthError
-from Error.LoginError import LoginError
+from error.AuthError import AuthError
+from error.LoginError import LoginError
 
 
 def load_test_accounts():

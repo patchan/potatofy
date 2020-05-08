@@ -1,0 +1,34 @@
+{
+  "positions": [
+    {
+      "symbol": "MSFT",
+      "currentMarketValue": 6017,
+      "currentPrice": 184.68,
+      "averageEntryPrice": 60.23
+    },
+    {
+      "symbol": "XAW.TO",
+      "currentMarketValue": 18153.76,
+      "currentPrice": 25.4,
+      "averageEntryPrice": 25.691277
+    },
+    {
+      "symbol": "VGRO.TO",
+      "currentMarketValue": 71423.27,
+      "currentPrice": 24.69,
+      "averageEntryPrice": 24.76417
+    },
+    {
+      "symbol": "AAPL",
+      "currentMarketValue": 7956.69,
+      "currentPrice": 310.13,
+      "averageEntryPrice": 60.23
+    },
+    {
+      "symbol": "AMZN",
+      "currentMarketValue": 15369.33,
+      "currentPrice": 2379.61,
+      "averageEntryPrice": 60.23
+    }
+  ]
+}

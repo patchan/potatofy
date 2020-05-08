@@ -1,8 +1,8 @@
 import unittest
 
 from Broker import Broker
-from Error.AuthError import AuthError
-from Error.LoginError import LoginError
+from error.AuthError import AuthError
+from error.LoginError import LoginError
 from tests.MockAuthenticator import MockAuthenticator, load_test_balance, load_test_positions
 
 
