@@ -4,3 +4,6 @@ balances/
 positions/
 targets/
 __pycache__/
+build/
+dist/
+*.spec
