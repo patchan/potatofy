@@ -3,10 +3,11 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+TARGET_PARENT = os.path.expanduser('./targets')
+TARGET_PATH = os.path.expanduser('./targets/targets.json')
+
 
 class Rebalancer:
-    TARGET_PARENT = os.path.expanduser('./targets')
-    TARGET_PATH = os.path.expanduser('./targets/targets.json')
 
     def __init__(self, portfolio):
         self.portfolio = portfolio
@@ -50,18 +51,18 @@ class Rebalancer:
 
     def save_target_alloc(self):
         try:
-            Path(self.TARGET_PARENT).mkdir(parents=True, exist_ok=True)
-            with open(self.TARGET_PATH, 'w') as file:
+            Path(TARGET_PARENT).mkdir(parents=True, exist_ok=True)
+            with open(TARGET_PATH, 'w') as file:
                 json.dump(self.target_alloc, file)
         except:
             print('Could not save targets')
 
     def load_targets(self):
         try:
-            with open(self.TARGET_PATH) as file:
+            with open(TARGET_PATH) as file:
                 return json.load(file)
         except IOError:
-            print('No target allocations found at {}'.format(self.TARGET_PATH))
+            print('No target allocations found at {}'.format(TARGET_PATH))
             return {}
 
     def calculate_alloc(self):

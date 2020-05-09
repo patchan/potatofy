@@ -61,13 +61,15 @@ class Account:
         total_holdings = Decimal(0)
         for currency in self.balance['combinedBalances']:
             if currency['currency'] == 'CAD':
-                total_holdings += Decimal(currency['marketValue']).quantize(Decimal('0.00'))
+                total_holdings += Decimal(currency['marketValue']).quantize(
+                    Decimal('0.00'))
         return total_holdings
 
     def get_positions(self):
         positions_dict = {}
         for position in self.positions:
-            positions_dict[position['symbol']] = Decimal(position['currentMarketValue']).quantize(Decimal('0.00'))
+            positions_dict[position['symbol']] = Decimal(
+                position['currentMarketValue']).quantize(Decimal('0.00'))
         return positions_dict
 
     def get_cash(self):

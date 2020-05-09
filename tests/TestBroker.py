@@ -3,7 +3,8 @@ import unittest
 from Broker import Broker
 from error.AuthError import AuthError
 from error.LoginError import LoginError
-from tests.MockAuthenticator import MockAuthenticator, load_test_balance, load_test_positions
+from tests.MockAuthenticator import MockAuthenticator, load_test_balance, \
+    load_test_positions
 
 
 class TestBroker(unittest.TestCase):
@@ -15,7 +16,8 @@ class TestBroker(unittest.TestCase):
     def test_authenticate(self):
         username = 'username'
         password = 'password'
-        self.assertEqual(self.broker.authenticate(username, password), 'security question')
+        self.assertEqual(self.broker.authenticate(username, password),
+                         'security question')
         with self.assertRaises(LoginError):
             self.broker.authenticate(username, username)
 
@@ -37,7 +39,6 @@ class TestBroker(unittest.TestCase):
         expected = load_test_balance(account)
         result = self.broker.get_balance(account)
         self.assertEqual(result, expected)
-
 
     def test_get_positions(self):
         account = '111111'

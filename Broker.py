@@ -1,11 +1,13 @@
-from Authenticator import Authenticator
 import os
 import json
 
+from Authenticator import Authenticator
+
+BALANCE_PATH = os.path.expanduser('./balances/balances.json')
+POSITIONS_PATH = os.path.expanduser('./positions/positions.json')
+
 
 class Broker:
-    BALANCE_PATH = os.path.expanduser('./balances/balances.json')
-    POSITIONS_PATH = os.path.expanduser('./positions/positions.json')
 
     def __init__(self):
         self.auth = Authenticator()
@@ -34,9 +36,9 @@ class Broker:
         return self.auth.request_share_prices(positions)
 
     # def save_balance(self, balances):
-    #     with open(self.BALANCE_PATH, 'w') as file:
+    #     with open(BALANCE_PATH, 'w') as file:
     #         json.dump(balances, file)
     #
     # def save_positions(self, positions):
-    #     with open(self.POSITIONS_PATH, 'w') as file:
+    #     with open(POSITIONS_PATH, 'w') as file:
     #         json.dump(positions, file)

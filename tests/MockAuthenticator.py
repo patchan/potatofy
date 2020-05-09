@@ -12,12 +12,14 @@ def load_test_accounts():
 
 
 def load_test_balance(account):
-    with open(os.path.expanduser('./data/balances_' + account + '.json')) as file:
+    with open(os.path.expanduser(
+            './data/balances_' + account + '.json')) as file:
         return json.load(file)
 
 
 def load_test_positions(account):
-    with open(os.path.expanduser('./data/positions_' + account + '.json')) as file:
+    with open(os.path.expanduser(
+            './data/positions_' + account + '.json')) as file:
         return json.load(file)['positions']
 
 
