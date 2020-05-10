@@ -1,5 +1,8 @@
+import sys
 import tkinter as tk
 from _tkinter import TclError
+from pathlib import Path
+
 from PIL import Image, ImageTk
 
 from Rebalancer import Rebalancer
@@ -63,14 +66,13 @@ class Holdings:
     def refresh_portfolio(self):
         try:
             self.potatofy.load_accounts()
-        except AuthError:
+        except:
             self.auth_error_prompt()
 
     def init_control_bar(self):
         self.control = tk.Frame(self.frame)
         pady = 10
         self.control.grid(row=0, columnspan=3, pady=pady, sticky=tk.W)
-        # TODO: fix refreshing behaviour
         tk.Button(self.control, text="Refresh Portfolio",
                   command=self.refresh_window)\
             .grid(row=0, column=0)
@@ -329,7 +331,8 @@ class Login:
         self.frame.resizable(False, False)
 
         icon = ImageTk.PhotoImage(
-            Image.open('./icons/Questrade.png').resize((209, 75)))
+            Image.open(self.resource_path('icons/Questrade.png'))
+                .resize((209, 75)))
         img_label = tk.Label(self.frame, image=icon)
         img_label.image = icon
         img_label.grid(row=0, columnspan=2, pady=5)
@@ -354,6 +357,19 @@ class Login:
         tk.Button(self.frame, text="Log In",
                   command=lambda: self.login(username.get(), password.get()))\
             .grid(row=4, columnspan=2, pady=3)
+
+    def resource_path(self, path):
+        ROOT_PATH = Path(__file__).parent.absolute()
+        """
+        Returns a Path representing where to look for resource files for the
+        program, such as databases or images.
+        This location changes if the program is run from an application built
+        with pyinstaller.
+        """
+
+        if hasattr(sys, '_MEIPASS'):  # being run from a pyinstall app
+            return Path(sys._MEIPASS) / Path(path)
+        return ROOT_PATH / Path(path)
 
     def login(self, username, password):
         try:
