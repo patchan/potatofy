@@ -21,10 +21,10 @@ jobs:
         pip install -r requirements.txt
     - name: Install build dependencies
       run: |
-        pip install -r requirements_build_win.txt
+        pip install -r requirements_winbuild.txt
     - name: Build x64
       run: |
-        pyinstaller potatofy.spec --noconfirm
+        pyinstaller potatofy_win.spec --noconfirm
     - name: Update Release
       uses: ncipollo/release-action@v1.6.1
       with:
