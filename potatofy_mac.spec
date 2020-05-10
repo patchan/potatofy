@@ -1,24 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 block_cipher = None
-from os.path import expanduser
-import os
-import zipfile
-os.path.expanduser
-
-
-def zipdir(path, ziph, sub_folder=""):
-    length = len(path)
-    print(os.listdir(path))
-    for root, dirs, files in os.walk(path):
-        folder = root[length:] # path without "parent"
-        if sub_folder != "":
-            print(f"before{folder}")
-            folder = sub_folder + folder
-            print(f"after{folder}")
-        for file in files:
-            ziph.write(os.path.join(root, file), os.path.join(folder, file))
-
 
 a = Analysis(['potatofy.py'],
              pathex=['.'],
@@ -59,12 +41,3 @@ app = BUNDLE(coll,
                info_plist={
                  'NSPrincipalClass': 'NSApplication'
                })
-
-
-print("Creating zip")
-zipf = zipfile.ZipFile('./Circleguard_osx.app.zip', 'w', zipfile.ZIP_DEFLATED)
-zipdir('./dist/Circleguard.app', zipf, "./Circleguard.app")
-zipf.close()
-print("Moving zip")
-os.rename("./Circleguard_osx.app.zip", "./dist/Circleguard_osx.app.zip")
-print("Finished zip")

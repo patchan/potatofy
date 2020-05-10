@@ -3,7 +3,7 @@ name: Build release
 on:
   push:
     tags:
-      - '#release'
+      - 'v1.#'
 
 jobs:
   build_win_x64:
@@ -67,7 +67,7 @@ jobs:
     - name: Update Release
       uses: ncipollo/release-action@v1.6.1
       with:
-        artifacts: "dist/*.zip"
+        artifacts: "dist/*.app"
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: true
         allowUpdates: true
