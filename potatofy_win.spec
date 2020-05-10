@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['potatofy.py'],
-             pathex=['/Users/Patrick/Documents/Projects/potatofy'],
-             binaries=[('/System/Library/Frameworks/Tk.framework/Tk', 'tk'), ('/System/Library/Frameworks/Tcl.framework/Tcl', 'tcl')],
+             pathex=['C:\\Users\\chanc\\Documents\\Projects\\potatofy'],
+             binaries=[],
              datas=[('icons/Questrade.png', 'icons')],
-             hiddenimports=[],
+             hiddenimports=['pkg_resources.py2_warn'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -19,19 +19,19 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
+          exclude_binaries=True,
           name='potatofy',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
-          console=False )
-app = BUNDLE(exe,
-             name='potatofy.app',
-             icon=None,
-             bundle_identifier=None)
+          console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='potatofy')
