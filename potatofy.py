@@ -318,6 +318,20 @@ class Position:
             .grid(row=self.index, column=2, sticky=tk.E)
 
 
+def get_resource_path(path):
+    ROOT_PATH = Path(__file__).parent.absolute()
+    """
+    Returns a Path representing where to look for resource files for the
+    program, such as databases or images.
+    This location changes if the program is run from an application built
+    with pyinstaller.
+    """
+
+    if hasattr(sys, '_MEIPASS'):  # being run from a pyinstall app
+        return Path(sys._MEIPASS) / Path(path)
+    return ROOT_PATH / Path(path)
+
+
 class Login:
 
     def __init__(self, parent, potatofy):
@@ -331,7 +345,7 @@ class Login:
         self.frame.resizable(False, False)
 
         icon = ImageTk.PhotoImage(
-            Image.open(self.resource_path('icons/Questrade.png'))
+            Image.open(get_resource_path('icons/Questrade.png'))
                 .resize((209, 75)))
         img_label = tk.Label(self.frame, image=icon)
         img_label.image = icon
@@ -357,19 +371,6 @@ class Login:
         tk.Button(self.frame, text="Log In",
                   command=lambda: self.login(username.get(), password.get()))\
             .grid(row=4, columnspan=2, pady=3)
-
-    def resource_path(self, path):
-        ROOT_PATH = Path(__file__).parent.absolute()
-        """
-        Returns a Path representing where to look for resource files for the
-        program, such as databases or images.
-        This location changes if the program is run from an application built
-        with pyinstaller.
-        """
-
-        if hasattr(sys, '_MEIPASS'):  # being run from a pyinstall app
-            return Path(sys._MEIPASS) / Path(path)
-        return ROOT_PATH / Path(path)
 
     def login(self, username, password):
         try:

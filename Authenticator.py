@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 from error.AuthError import AuthError
 from error.LoginError import LoginError
+from potatofy import get_resource_path
 
 LOGIN_SERVER = 'https://login.questrade.com/oauth2/' \
                'token?grant_type=refresh_token&refresh_token='
@@ -189,13 +190,13 @@ class Authenticator:
     # writes Token to TOKEN_PATH as a json
     def write_token(self, token):
         token_json = token.convert_to_json()
-        Path(TOKEN_PARENT_DIR).mkdir(parents=True, exist_ok=True)
-        with open(TOKEN_PATH, 'w') as file:
+        Path(get_resource_path(TOKEN_PARENT_DIR)).mkdir(parents=True, exist_ok=True)
+        with open(get_resource_path(TOKEN_PATH), 'w') as file:
             json.dump(token_json, file)
 
     # tries to read token from disk, prompts login re-authentication if fails
     def load_token(self):
-        with open(TOKEN_PATH) as file:
+        with open(get_resource_path(TOKEN_PATH)) as file:
             json_token = json.load(file)
             self.TOKEN = self.create_token(json_token)
 
