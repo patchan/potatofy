@@ -7,4 +7,4 @@ Potatofy requires authorized API access to your Questrade account, which grants 
 ## Download 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/patchan/potatofy)](https://github.com/patchan/potatofy/releases/latest)
 
-The latest version of potatofy is available for download [here](https://github.com/patchan/potatofy/releases/latest). Download the appropriate file for your operating system (potatofy_win.zip for Windows, or potatofy_mac.app.zip for MacOS). To run the program, unzip the downloaded file and open the potatofy shortcut (on Windows) or open potatofy.app (on MacOS).
+The latest version of potatofy is available for download [here](https://github.com/patchan/potatofy/releases/latest). Download the appropriate file for your operating system (``potatofy_win.zip`` for Windows, or ``potatofy_mac.app.zip`` for MacOS). To run the program, unzip the downloaded file and open the potatofy shortcut (on Windows) or open ``potatofy_mac.app`` (on MacOS).
