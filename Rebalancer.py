@@ -35,7 +35,6 @@ class Rebalancer:
 
     def set_target_alloc(self, ticker, allocation):
         self.target_alloc[ticker] = Decimal(allocation).quantize(Decimal('0.0'))
-        # self.save_target_alloc()
 
     def remove_target_alloc(self, ticker):
         del self.target_alloc[ticker]
