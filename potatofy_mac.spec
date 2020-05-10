@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['potatofy.py'],
-             pathex=['/Users/Patrick/Documents/Projects/potatofy'],
+             pathex=['.'],
              binaries=[('/System/Library/Frameworks/Tk.framework/Tk', 'tk'), ('/System/Library/Frameworks/Tcl.framework/Tcl', 'tcl')],
              datas=[('icons/Questrade.png', 'icons')],
              hiddenimports=[],
@@ -19,19 +19,26 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
+          exclude_binaries=True,
           name='potatofy',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
           console=False )
-app = BUNDLE(exe,
-             name='potatofy.app',
-             icon=None,
-             bundle_identifier=None)
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='potatofy')
+app = BUNDLE(coll,
+               name='potatofy.app',
+               icon=None,
+               bundle_identifier=None,
+               info_plist={
+                 'NSPrincipalClass': 'NSApplication'
+               })

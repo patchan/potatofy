@@ -1,4 +1,4 @@
-import os
+import sys
 from pathlib import Path
 
 import requests
@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 
 from error.AuthError import AuthError
 from error.LoginError import LoginError
-from potatofy import get_resource_path
 
 LOGIN_SERVER = 'https://login.questrade.com/oauth2/' \
                'token?grant_type=refresh_token&refresh_token='
@@ -17,8 +16,22 @@ AUTH_SERVER = 'https://login.questrade.com/oauth2/' \
               '&response_type=token' \
               '&redirect_uri=https://patchan.ca/potatofy'
 
-TOKEN_PARENT_DIR = os.path.expanduser('./token')
-TOKEN_PATH = os.path.expanduser('./token/token.json')
+TOKEN_PARENT_DIR = 'token'
+TOKEN_PATH = 'token/token.json'
+
+
+def get_resource_path(path):
+    ROOT_PATH = Path(__file__).parent.absolute()
+    """
+    Returns a Path representing where to look for resource files for the
+    program, such as databases or images.
+    This location changes if the program is run from an application built
+    with pyinstaller.
+    """
+
+    if hasattr(sys, '_MEIPASS'):  # being run from a pyinstall app
+        return Path(sys._MEIPASS) / Path(path)
+    return ROOT_PATH / Path(path)
 
 
 class Authenticator:
