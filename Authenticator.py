@@ -14,7 +14,7 @@ LOGIN_SERVER = 'https://login.questrade.com/oauth2/' \
 AUTH_SERVER = 'https://login.questrade.com/oauth2/' \
               'authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw' \
               '&response_type=token' \
-              '&redirect_uri=https://patchan.ca/potatofy'
+              '&redirect_uri=https://patchan.github.io/potatofy/'
 
 TOKEN_PARENT_DIR = 'token'
 TOKEN_PATH = 'token/token.json'
@@ -65,7 +65,6 @@ class Authenticator:
         try:
             self.request_login(username, password)
             self.request_security_question()
-            return self.parse_security_question()
         except:
             raise LoginError('unable to log in')
 
@@ -91,57 +90,47 @@ class Authenticator:
         self.last_response = self.session.get(AUTH_SERVER)
 
     def request_login(self, username, password):
-        response_id = '/oauth2/authorize?client_id=B0RJvfEsABEDcH3EBupD6Ci35V9cFw'
-        data = {'ctl00$DefaultContent$txtUsername': username,
-                'ctl00$DefaultContent$txtPassword': password,
-                'ctl00$DefaultContent$btnContinue': 'Log in',
-                'ctl00$DefaultContent$txtUsernameHidden': '',
-                'ctl00$DefaultContent$hdnIsCaptchaVisible': '',
-                'ctl00$DefaultContent$hidResponseRelyingParty': response_id
+        data = {'UserId': username,
+                'Password': password,
+                'button': 'login',
+                'Captcha': ''
                 }
-        self.set_view_state(self.last_response.text, data)
-        self.last_response = self.session.post(self.last_response.url,
+        self.set_return_url(self.last_response.text, data)
+        self.set_verification_token(self.last_response.text, data)
+        self.last_response = self.session.post('https://login.questrade.com/Account/Login',
                                                data=data)
         if self.last_response.url != \
-                'https://login.questrade.com/' \
-                'CheckSecurityQuestion.aspx?cookieCheck=true':
+                'https://login.questrade.com/Account/LoginMfa':
             raise LoginError('invalid username or password')
 
     def request_security_question(self):
         self.last_response = self.session.get(self.last_response.url)
+        print(self.last_response)
+        data = {'provider': 'PhoneSms',
+                'button': 'submit'
+                }
+        self.set_verification_token(self.last_response.text, data)
+        self.last_response = self.session.post('https://login.questrade.com/Account/ChooseMfaProvider', data=data)
+        print(self.last_response.url)
 
     def request_security_check(self, answer):
-        check_html = self.parse_html(self.last_response.text)
-        question_id = self.extract_question_id(check_html)
-        data = {'ctl00$DefaultContent$hdnQuestionID': question_id,
-                'ctl00$DefaultContent$txtAnswer': answer,
-                'ctl00_DefaultContent_RadWindowManager1_ClientState': ''}
-        self.set_view_state(self.last_response.text, data)
-        # view state has a unique EVENTTARGET not in HTML
-        data['__EVENTTARGET'] = 'ctl00$DefaultContent$btnContinue'
+        data = {'Provider': 'PhoneSms',
+                'Code': answer,
+                'button': 'submit',
+                'RememberDevice': 'false'
+                }
+        self.set_verification_token(self.last_response.text, data)
         self.last_response = self.session.post(self.last_response.url,
                                                data=data)
 
-    def parse_security_question(self):
-        check_html = self.parse_html(self.last_response.text)
-        return self.extract_question(check_html)
-
     def authorize_api(self):
-        data = {'ctl00$DefaultContent$btnAllow': 'Allow'}
-        self.set_view_state(self.last_response.text, data)
-        url = self.last_response.url
-        self.last_response = self.session.post(url, data=data)
-
-    def set_asp_state(self, data, event_target, event_argument, view_state,
-                      view_state_generator, event_validation):
-        data['__EVENTTARGET'] = event_target
-        data['__EVENTARGUMENT'] = event_argument
-        data['__VIEWSTATE'] = view_state
-        data['__VIEWSTATEGENERATOR'] = view_state_generator
-        data['__EVENTVALIDATION'] = event_validation
-
-    def parse_html(self, text):
-        return BeautifulSoup(text, 'html.parser')
+        data = {'__EVENTTARGET': '',
+                '__EVENTARGUMENT': '',
+                'ctl00$DefaultContent$btnAllow': 'Allow',
+                'ctl00$DefaultContent$txtDevice': 'Mac+OS+X+10.15+Firefox'
+                }
+        self.set_asp_state(self.last_response.text, data)
+        self.last_response = self.session.post(self.last_response.url, data=data)
 
     def extract_view_state(self, html):
         return html.find(id='__VIEWSTATE')['value']
@@ -152,27 +141,30 @@ class Authenticator:
     def extract_event_validation(self, html):
         return html.find(id='__EVENTVALIDATION')['value']
 
-    def extract_event_target(self, html):
-        return html.find(id='__EVENTTARGET')['value']
-
-    def extract_event_argument(self, html):
-        return html.find(id='__EVENTARGUMENT')['value']
-
-    def extract_question(self, html):
-        return html.find(class_='question lg').string
-
-    def extract_question_id(self, html):
-        return html.find(id='ctl00_DefaultContent_hdnQuestionID')['value']
-
-    def set_view_state(self, text, data):
+    def set_return_url(self, text, data):
         html = self.parse_html(text)
-        event_target = self.extract_event_target(html)
-        event_argument = self.extract_event_argument(html)
-        view_state = self.extract_view_state(html)
-        view_state_generator = self.extract_view_state_generator(html)
-        event_validation = self.extract_event_validation(html)
-        self.set_asp_state(data, event_target, event_argument, view_state,
-                           view_state_generator, event_validation)
+        return_url = self.extract_return_url(html)
+        data['ReturnUrl'] = return_url
+
+    def set_verification_token(self, text, data):
+        html = self.parse_html(text)
+        request_verification_token = self.extract_request_verification_token(html)
+        data['__RequestVerificationToken'] = request_verification_token
+
+    def set_asp_state(self, text, data):
+        html = self.parse_html(text)
+        data['__VIEWSTATE'] = self.extract_view_state(html)
+        data['__VIEWSTATEGENERATOR'] = self.extract_view_state_generator(html)
+        data['__EVENTVALIDATION'] = self.extract_event_validation(html)
+
+    def parse_html(self, text):
+        return BeautifulSoup(text, 'html.parser')
+
+    def extract_return_url(self, html):
+        return html.find(id='ReturnUrl')['value']
+
+    def extract_request_verification_token(self, html):
+        return html.find('input', {'name': '__RequestVerificationToken'})['value']
 
     def parse_token(self, url):
         split_url = url.split('#')

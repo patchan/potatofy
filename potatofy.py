@@ -374,8 +374,8 @@ class Login:
 
     def login(self, username, password):
         try:
-            question = self.potatofy.broker.authenticate(username, password)
-            self.new_window = SecurityCheck(self, self.potatofy, question)
+            self.potatofy.broker.authenticate(username, password)
+            self.new_window = SecurityCheck(self, self.potatofy)
         except LoginError:
             tk.Label(self.frame,
                      text="Invalid username or password. Please try again.",
@@ -390,21 +390,20 @@ class Login:
 
 class SecurityCheck:
 
-    def __init__(self, parent, potatofy, question):
+    def __init__(self, parent, potatofy):
         self.parent = parent
         self.potatofy = potatofy
-        self.question = question
         self.frame = tk.Toplevel(self.parent.frame)
         self.init()
         tk.Label(self.frame)
 
     def init(self):
         self.frame.config(padx=10, pady=10)
-        tk.Label(self.frame, text="Security Question").pack()
+        tk.Label(self.frame, text="Enter Verification Code").pack()
+        tk.Label(self.frame, text="The code was texted to the phone associated with your account").pack()
 
-        tk.Label(self.frame, text=self.question).pack()
         answer = tk.StringVar()
-        tk.Entry(self.frame, textvariable=answer, show="*").pack()
+        tk.Entry(self.frame, textvariable=answer).pack()
 
         tk.Button(self.frame, text="Submit",
                   command=lambda: self.two_factor(answer.get())).pack()
