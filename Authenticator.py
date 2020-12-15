@@ -5,6 +5,7 @@ import requests
 import requests.auth
 import json
 from bs4 import BeautifulSoup
+import shortuuid as suuid
 
 from error.AuthError import AuthError
 from error.LoginError import LoginError
@@ -105,13 +106,11 @@ class Authenticator:
 
     def request_security_question(self):
         self.last_response = self.session.get(self.last_response.url)
-        print(self.last_response)
         data = {'provider': 'PhoneSms',
                 'button': 'submit'
                 }
         self.set_verification_token(self.last_response.text, data)
         self.last_response = self.session.post('https://login.questrade.com/Account/ChooseMfaProvider', data=data)
-        print(self.last_response.url)
 
     def request_security_check(self, answer):
         data = {'Provider': 'PhoneSms',
@@ -127,7 +126,7 @@ class Authenticator:
         data = {'__EVENTTARGET': '',
                 '__EVENTARGUMENT': '',
                 'ctl00$DefaultContent$btnAllow': 'Allow',
-                'ctl00$DefaultContent$txtDevice': 'Mac+OS+X+10.15+Firefox'
+                'ctl00$DefaultContent$txtDevice': 'potatofy_' + suuid.uuid()
                 }
         self.set_asp_state(self.last_response.text, data)
         self.last_response = self.session.post(self.last_response.url, data=data)
