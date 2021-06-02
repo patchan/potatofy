@@ -7,6 +7,6 @@ pprint==0.1
 requests==2.23.0
 requests-auth==5.1.0
 soupsieve==2.0
-urllib3==1.25.9
+urllib3==1.26.5
 viewstate==0.5.3
 shortuuid==1.0.1
